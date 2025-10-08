@@ -1,5 +1,8 @@
 # 🎤 LocalWhisper
 
+<img width="2032" height="1239" alt="image" src="https://github.com/user-attachments/assets/624ce25a-3b8e-4ec7-a2c3-10fe92e5cd82" />
+
+
 Aplicação web local para transcrição e tradução de áudio usando OpenAI Whisper.
 
 ## ✨ Características
