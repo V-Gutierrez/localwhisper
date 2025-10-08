@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalWhisper - Transcrição de Áudio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎤 LocalWhisper</h1>
+            <p>Transcrição e tradução de áudio local com Whisper</p>
+        </header>
+
+        <main>
+            <!-- Opções -->
+            <div class="options-panel">
+                <div class="option-group">
+                    <label for="model">Modelo:</label>
+                    <select id="model">
+                        <option value="tiny">Tiny (Rápido, ~75MB)</option>
+                        <option value="base" selected>Base (Recomendado, ~150MB)</option>
+                        <option value="small">Small (Melhor, ~500MB)</option>
+                        <option value="medium">Medium (Lento, ~1.5GB)</option>
+                        <option value="large">Large (Muito lento, ~3GB)</option>
+                    </select>
+                </div>
+
+                <div class="option-group">
+                    <label for="language">Idioma:</label>
+                    <select id="language">
+                        <option value="">Auto-detectar</option>
+                        <option value="pt">Português</option>
+                        <option value="en">Inglês</option>
+                        <option value="es">Espanhol</option>
+                        <option value="fr">Francês</option>
+                        <option value="de">Alemão</option>
+                        <option value="it">Italiano</option>
+                        <option value="ja">Japonês</option>
+                        <option value="ko">Coreano</option>
+                        <option value="zh">Chinês</option>
+                    </select>
+                </div>
+
+                <div class="option-group">
+                    <label for="task">Tarefa:</label>
+                    <select id="task">
+                        <option value="transcribe">Transcrever</option>
+                        <option value="translate">Traduzir para Inglês</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Upload e Gravação -->
+            <div class="upload-section">
+                <!-- Drop Zone -->
+                <div id="drop-zone" class="drop-zone">
+                    <div class="drop-zone-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <h3>Arraste um arquivo de áudio aqui</h3>
+                        <p>ou</p>
+                        <label for="file-input" class="btn btn-secondary">
+                            Escolher Arquivo
+                        </label>
+                        <input type="file" id="file-input" accept="audio/*,video/*" hidden>
+                        <p class="supported-formats">MP3, WAV, OGG, M4A, FLAC, WEBM, MP4, AVI</p>
+                    </div>
+                </div>
+
+                <!-- Gravação -->
+                <div class="recording-section">
+                    <p class="divider">ou grave um áudio</p>
+                    <button id="record-btn" class="btn btn-record">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="8"></circle>
+                        </svg>
+                        <span>Gravar Áudio</span>
+                    </button>
+                    <div id="recording-status" class="recording-status" style="display: none;">
+                        <div class="recording-indicator"></div>
+                        <span id="recording-time">00:00</span>
+                    </div>
+                </div>
+
+                <!-- Arquivo Selecionado -->
+                <div id="file-info" class="file-info" style="display: none;">
+                    <div class="file-details">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 18V5l12-2v13"></path>
+                            <circle cx="6" cy="18" r="3"></circle>
+                            <circle cx="18" cy="16" r="3"></circle>
+                        </svg>
+                        <div>
+                            <p id="file-name"></p>
+                            <p id="file-size"></p>
+                        </div>
+                    </div>
+                    <button id="clear-file" class="btn-icon">✕</button>
+                </div>
+
+                <!-- Botão Transcrever -->
+                <button id="transcribe-btn" class="btn btn-primary" style="display: none;">
+                    Transcrever
+                </button>
+            </div>
+
+            <!-- Loading -->
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Transcrevendo áudio...</p>
+                <p class="loading-hint">Primeira vez pode demorar mais (download do modelo)</p>
+            </div>
+
+            <!-- Resultado -->
+            <div id="result-section" class="result-section" style="display: none;">
+                <h3>Resultado</h3>
+                <div class="result-header">
+                    <span id="detected-language" class="badge"></span>
+                    <div class="result-actions">
+                        <button id="copy-btn" class="btn btn-small">Copiar</button>
+                        <button id="download-btn" class="btn btn-small">Baixar .txt</button>
+                    </div>
+                </div>
+                <div id="result-text" class="result-text"></div>
+
+                <!-- Segmentos (timestamps) -->
+                <details class="segments-details">
+                    <summary>Ver timestamps</summary>
+                    <div id="segments-container" class="segments-container"></div>
+                </details>
+
+                <button id="new-transcription-btn" class="btn btn-secondary">
+                    Nova Transcrição
+                </button>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by <a href="https://github.com/openai/whisper" target="_blank">OpenAI Whisper</a></p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
